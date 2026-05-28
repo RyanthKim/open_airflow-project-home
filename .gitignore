@@ -1,7 +1,36 @@
-.env
-logs/
-*.log
-airflow.cfg
+# --- Python ---
 __pycache__/
-*.pyc
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# --- Environment ---
+.env
+!.env.example
+
+# --- Secrets ---
 google-credentials.json
+
+# --- Airflow ---
+airflow.cfg
+*.log
+logs/
+
+# --- IDE ---
+.vscode/
+.idea/
+*.swp
+
+# --- Virtual environments ---
+venv/
+.venv/
+
+# --- Testing ---
+.pytest_cache/
+htmlcov/
+.coverage
+
+# --- OS ---
+.DS_Store
+Thumbs.db

@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Lint with ruff
+        run: ruff check airflow/ tests/
+
+      - name: Run tests with coverage
+        env:
+          AIRFLOW_HOME: /tmp/airflow_test
+          AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+          AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: "sqlite:////tmp/airflow_test.db"
+        run: pytest tests/ -v --tb=short --co -q && pytest tests/ -v --cov=airflow --cov-report=term-missing

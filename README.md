@@ -1,378 +1,419 @@
-# 🚀 Apache Airflow Data Pipeline Portfolio Project
+# Airflow ETL Pipeline
 
-## 📋 프로젝트 개요
-
-이 프로젝트는 **Apache Airflow를 활용한 데이터 파이프라인 구축**을 학습하여 **실제 실무에 적용하고 사용 중인 포트폴리오**입니다.
-
-> 🚀 **실무 적용 현황**: 현재 실제 업무 환경에서 데이터 파이프라인으로 활용되어 업무 효율성 증대 및 프로세스 자동화에 기여하고 있습니다.
-
-### 🎯 **학습 목표**
-- **Apache Airflow 기초 학습**: DAG 설계 및 구현 방법 습득
-- **데이터 파이프라인 이해**: 기본적인 ETL 프로세스 구조 학습
-- **Docker 환경 경험**: 컨테이너 기반 개발 환경 구축 연습
-- **API 연동 워크플로우화**: 기존에 알고 있던 API 연동을 Airflow DAG로 구성하는 방법 학습
-- **자연어 처리 워크플로우화**: 기존에 알고 있던 텍스트 마이닝을 Airflow Task로 자동화하는 방법 학습
-
-### 🔍 **학습 과정에서 경험한 내용**
-- **실무 환경 체험**: 실제 업무에서 사용하는 도구들을 활용한 개발 경험
-- **모듈화 연습**: 코드를 기능별로 분리하여 관리하는 방법 학습
-- **의존성 관리 학습**: Task 간 실행 순서와 의존성 처리 방법 이해
-- **모니터링 시스템 구축**: 기본적인 알림 시스템 구현 경험
-- **확장 가능한 구조 고려**: 향후 기능 추가를 고려한 설계 연습
-
-## 🏗️ 프로젝트 아키텍처
-
-```
-airflow_project_home/
-├── airflow_project/                    # Airflow 프로젝트 핵심 디렉토리
-│   ├── dags/                          # Airflow DAG 정의
-│   │   └── daily_table_update_dag.py  # 메인 데이터 업데이트 DAG
-│   ├── tasks/                         # DAG별 Task 함수들
-│   │   └── daily_table_update_tasks.py
-│   └── libs/                          # 공통 라이브러리
-│       ├── config_utils.py            # 환경 설정 및 컴포넌트 초기화
-│       ├── database_utils.py          # 데이터베이스 연결 및 관리
-│       ├── sheets_utils.py            # Google Sheets API 연동
-│       ├── redash_utils.py            # Redash API 연동
-│       ├── contract_form_category_analyzer.py  # 텍스트 마이닝 분석
-│       ├── notification_utils.py      # Slack 알림 시스템
-│       ├── documentCategoryJson/      # 카테고리 분석용 사전 데이터
-│       └── formCategoryJson/          # 서식 분석용 사전 데이터
-├── requirements.txt                    # Python 의존성 관리 (프로젝트 루트)
-├── Dockerfile                         # Airflow 컨테이너 빌드 (프로젝트 루트)
-├── docker-compose.yaml                # Docker 서비스 오케스트레이션
-├── google-credentials.json            # Google API 인증 정보 (데모용)
-├── .env example                       # 환경 변수 설정 예시
-├── .gitignore                         # Git 무시 파일 설정
-├── query_samples/                     # DAG에서 사용되는 샘플 쿼리들
-│   ├── airflow_dag_sample_query_1.sql # 구독 데이터 처리 파이프라인
-│   ├── airflow_dag_sample_query_2.sql # 결제 빌링 데이터 처리 파이프라인
-│   └── airflow_dag_sample_query_3.sql # 바이럴 효과 측정 분석 파이프라인
-└── README.md                          # 프로젝트 문서
-```
-
-## 📊 샘플 쿼리 소개
-
-이 프로젝트는 실제 실무에서 사용되는 복잡한 데이터 처리 쿼리들을 포트폴리오용으로 안전하게 변환한 샘플들을 포함하고 있습니다.
-
-### **1. 구독 데이터 처리 파이프라인** (`airflow_dag_sample_query_1.sql`)
-- **목적**: 구독 서비스의 이벤트 로그를 처리하여 구독 기간 및 상태를 분석
-- **주요 기능**: 
-  - 복잡한 데이터 변환 및 CTE 활용
-  - 이벤트 로그 처리 및 비즈니스 로직 구현
-  - 재귀적 쿼리 패턴과 윈도우 함수 활용
-  - 구독 생명주기 관리 및 분석
-- **사용 사례**: 일일 구독 데이터 처리, 비즈니스 인텔리전스 및 리포팅
-
-### **2. 결제 빌링 데이터 처리 파이프라인** (`airflow_dag_sample_query_2.sql`)
-- **목적**: 결제 및 빌링 데이터를 처리하여 재무 분석 및 리포팅 지원
-- **주요 기능**:
-  - 복잡한 빌링 데이터 변환 및 분석
-  - 결제 처리 및 구독 기간 관리
-  - 인보이스 분류 및 바우처 플랜 처리
-  - 환불 처리 및 금액 계산
-  - 다차원 빌링 분석 및 리포팅
-- **사용 사례**: 일일 빌링 데이터 처리, 재무 리포팅 및 비즈니스 인텔리전스
-
-### **3. 바이럴 효과 측정 분석 파이프라인** (`airflow_dag_sample_query_3.sql`)
-- **목적**: 서명 경험을 통한 서명자의 가입 및 결제 여부를 분석하여 바이럴 효과 측정
-- **주요 기능**:
-  - **1단계**: 참여자 데이터 테이블 생성 및 관리 (개인정보 보호를 위한 해시 처리)
-  - **2단계**: 참여자 정보와 문서 정보의 JOIN 처리
-  - **3단계**: 열람 이력 기반 서명자 필터링 및 순서 관리
-  - **4단계**: 이메일과 전화번호별 중복 제거 및 우선순위 처리
-  - **5단계**: 서명 경험을 통한 가입 여부 판단 로직
-  - **6단계**: 바이럴 효과 측정을 위한 데이터 분석
-- **사용 사례**: 마케팅 효과 분석, 바이럴 성과 측정, 사용자 행동 분석
-- **특징**: 복잡한 데이터 파이프라인을 단계별로 구분하여 체계적인 분석 수행
-
-### **🔒 보안 조치**
-- 모든 테이블명을 `example_` 접두사로 변경
-- 실제 회사 정보 및 민감한 비즈니스 로직 제거
-- 샘플 데이터 및 가격 정보로 대체
+실 운영 환경에서 검증된 Airflow 기반 ETL 파이프라인 포트폴리오.
+Medallion Architecture(Bronze/Silver/Gold)로 데이터를 단계적으로 정제하며,
+Airflow 2.10+ Task SDK, Asset 기반 Cross-DAG 의존성, 커스텀 Sensor 등
+프로덕션 수준의 패턴을 적용한 프로젝트입니다.
 
 ---
 
-## 🚀 학습하며 구현한 주요 기능
+## 프로젝트 개요
 
-### 1. **데이터 파이프라인 워크플로우**
+이 프로젝트는 SaaS 환경의 구독/결제/이벤트 데이터를 수집하고,
+단계적으로 정제하여 분석 가능한 형태로 제공하는 데이터 파이프라인입니다.
+
+**핵심 특징:**
+- Medallion Architecture (Bronze -> Silver -> Gold) 기반 데이터 정제
+- Airflow Task SDK (`@task`, TaskGroup, Asset) 활용
+- 커스텀 Sensor를 통한 네트워크/VPN 사전 검증
+- 배치 처리 + 메모리 관리로 제한된 리소스에서 안정 운영
+- Slack 콜백을 통한 파이프라인 모니터링
+
+---
+
+## 아키텍처
+
+### 전체 데이터 흐름
+
 ```
-Google Sheets → Redshift → Redash → Text Mining → Slack 알림
+  Data Sources              Bronze               Silver                Gold             Output
+ +--------------+     +----------------+    +-----------------+    +-------------+    +----------+
+ | Google Sheets|---->| temp_event_logs|    | plan_info       |    |             |    |Dashboard |
+ | Redshift raw |---->| temp_sub_      |--->| subscription_   |--->| Gold 집계   |--->|Slack     |
+ | API Events   |---->|   periods      |    |   periods       |    | 테이블     |    |Report    |
+ +--------------+     +----------------+    +-----------------+    +-------------+    +----------+
+                       DROP TABLE IF EXISTS   DELETE + INSERT        Asset trigger
+                       CREATE TABLE AS        (idempotent)          Cross-DAG 연계
 ```
 
-- **데이터 수집**: 기존에 학습한 Google Sheets API를 활용하여 데이터 추출
-- **데이터 저장**: 기존에 학습한 데이터베이스 저장 방법 활용
-- **데이터 분석**: 쿼리 실행 순서와 의존성 관리 방법을 새로 학습
-- **텍스트 분석**: 기존에 학습한 한국어 자연어 처리 라이브러리 활용
-- **모니터링**: 기존에 학습한 Slack 알림 시스템 활용
+### Medallion Architecture 상세
 
-### 2. **의존성 관리 학습**
+```
+ +---------------------------------------------------------------------+
+ |                        Airflow Scheduler                             |
+ +---------------------------------------------------------------------+
+         |                    |                     |
+         v                    v                     v
+ +---------------+    +---------------+     +---------------+
+ |    Bronze     |    |    Silver     |     |     Gold      |
+ |  (Staging)    |    |  (Cleansed)  |     |  (Analytics)  |
+ |---------------|    |---------------|     |---------------|
+ | - raw 데이터   |    | - 정규화      |     | - 집계 테이블  |
+ |   UNION/적재  |--->| - JOIN/보강   |---->| - KPI 산출    |
+ | - 임시 테이블   |    | - 품질 검증   |     | - 리포트 뷰   |
+ | - 3일 윈도우   |    | - 90일 범위   |     | - Asset 발행  |
+ +---------------+    +---------------+     +---------------+
+   CTAS (덮어쓰기)      DELETE+INSERT          Asset trigger
+                        (멱등성 보장)         (Cross-DAG)
+```
+
+**Bronze (Staging)**
+- 원천 데이터를 그대로 적재하는 단계
+- `DROP TABLE IF EXISTS` + `CREATE TABLE AS`로 매 실행마다 재생성
+- 여러 소스(user_events, system_events, api_events)를 UNION하여 통합
+- 윈도우 함수로 순서 인덱스 부여 (idx, idx_inverse)
+
+**Silver (Cleansed)**
+- Bronze 데이터를 정규화하고 비즈니스 로직을 적용하는 단계
+- `DELETE + INSERT` 패턴으로 멱등성 보장 (트랜잭션 내 실행)
+- Recursive CTE로 구독 상태 체인 추적
+- Plan 정보, 가격, 기능 플래그를 JOIN하여 비정규화 차원 테이블 구성
+
+**Gold (Analytics)**
+- 최종 분석/리포팅용 집계 테이블
+- Asset(Dataset) trigger를 통해 하위 DAG 자동 실행
+- 대시보드/Slack 리포트의 데이터 소스
+
+### Cross-DAG 의존성 (Asset/Dataset)
+
+```
+ DAG: bronze_pipeline           DAG: silver_pipeline          DAG: gold_reporting
+ +--------------------+         +--------------------+        +------------------+
+ | temp_event_logs    |         | plan_info          |        | daily_kpi        |
+ | temp_sub_periods   |--Asset->| subscription_      |--Asset>| slack_report     |
+ |                    |  trigger|   periods           | trigger|                  |
+ +--------------------+         +--------------------+        +------------------+
+```
+
+Bronze DAG가 완료되면 Asset을 발행하고,
+Silver DAG가 해당 Asset을 감지하여 자동 트리거됩니다.
+이 패턴으로 DAG 간 결합도를 낮추면서도 실행 순서를 보장합니다.
+
+---
+
+## 프로젝트 구조
+
+```
+.
+├── airflow/
+│   ├── dags/
+│   │   ├── libs/                     # 공통 라이브러리
+│   │   │   ├── alerts.py             # Slack 성공/실패 콜백
+│   │   │   ├── sensors.py            # RedshiftConnectionSensor (VPN 체크)
+│   │   │   └── logging_config.py     # Airflow/로컬 환경 자동 감지 로거
+│   │   └── sql/
+│   │       ├── bronze/               # Bronze 레이어 SQL
+│   │       │   ├── temp_event_logs.sql
+│   │       │   ├── temp_subscription_periods.sql
+│   │       │   └── drop_temp_tables.sql
+│   │       ├── silver/               # Silver 레이어 SQL
+│   │       │   ├── plan_info.sql
+│   │       │   └── subscription_periods.sql
+│   │       └── gold/                 # Gold 레이어 SQL
+│   ├── config/                       # Airflow 설정 오버라이드
+│   ├── logs/                         # 태스크 실행 로그 (gitignored)
+│   └── plugins/                      # 커스텀 Operator/Hook
+├── tests/
+│   └── unit/                         # 단위 테스트
+├── docker-compose.yaml               # 멀티 컨테이너 Airflow 환경
+├── requirements.txt                  # 프로덕션 의존성
+├── requirements-dev.txt              # 개발/테스트 의존성
+├── .env.example                      # 환경 변수 템플릿
+└── .gitignore
+```
+
+---
+
+## 주요 패턴
+
+### 1. Airflow Task SDK (@task, TaskGroup, Asset)
+
+Airflow 2.10+의 Task SDK를 활용하여 Pythonic하게 DAG를 구성합니다.
+
 ```python
-# 독립적 쿼리들 (병렬 실행 가능)
-independent_queries = [1001, 1002, 1003, ...]
+from airflow.sdk import Asset, DAG, task, TaskGroup
 
-# 의존적 쿼리들 (순차 실행 필요)
-dependent_queries = [2001, 2002]  # 의존성: 1009, 1012
+# Asset 정의: Cross-DAG 의존성의 핵심
+bronze_complete = Asset("bronze_complete")
+
+@task
+def extract_events() -> dict:
+    """Bronze: 이벤트 로그 적재"""
+    ...
+
+@task(outlets=[bronze_complete])
+def load_subscription_periods(event_summary: dict) -> None:
+    """Bronze: 구독 기간 적재 + Asset 발행"""
+    ...
+
+with DAG(...) as dag:
+    with TaskGroup("bronze") as bronze_group:
+        events = extract_events()
+        load_subscription_periods(events)
 ```
 
-- **의존성 이해**: 쿼리 간 의존성을 정의하는 방법 학습
-- **실행 순서 관리**: 독립적인 작업과 순차적인 작업을 구분하는 방법 연습
-- **안전한 처리**: 의존성이 있는 작업들을 순서대로 처리하는 방법 익히기
+**Task SDK 적용 포인트:**
+- `@task` 데코레이터로 XCom 직렬화 자동 처리
+- TaskGroup으로 Bronze/Silver/Gold 단계 시각적 그룹핑
+- Asset(구 Dataset)으로 DAG 간 데이터 의존성 선언
 
-### 3. **코드 모듈화 연습**
+### 2. Medallion Architecture (Bronze/Silver/Gold)
+
+SQL 파일을 레이어별로 분리하여 관리합니다.
+
+```
+sql/
+├── bronze/     CTAS (CREATE TABLE AS) — 매번 재생성, 원천 그대로
+├── silver/     DELETE+INSERT in transaction — 멱등성 보장, 비즈니스 로직
+└── gold/       집계/리포팅 뷰 — Asset trigger로 하위 DAG 연계
+```
+
+**Bronze 레이어 SQL 패턴:**
+```sql
+-- CTAS: 임시 테이블을 매번 새로 생성
+DROP TABLE IF EXISTS analytics.temp_event_logs;
+CREATE TABLE analytics.temp_event_logs
+DISTKEY (user_id)
+SORTKEY (event_ts, event_source)
+AS
+WITH union_events AS (
+    SELECT ... FROM raw.user_events
+    UNION ALL
+    SELECT ... FROM raw.system_events
+    UNION ALL
+    SELECT ... FROM raw.api_events
+)
+SELECT ... FROM indexed_events;
+```
+
+**Silver 레이어 SQL 패턴:**
+```sql
+-- 트랜잭션 내 DELETE+INSERT: 멱등성 보장
+BEGIN;
+DELETE FROM analytics.subscription_periods
+WHERE period_start >= DATEADD(day, -90, CURRENT_DATE);
+
+INSERT INTO analytics.subscription_periods (...)
+WITH RECURSIVE period_chain (...) AS (
+    -- Anchor: 첫 구독 이벤트
+    SELECT ... WHERE event_seq = 1
+    UNION ALL
+    -- Recursive: 다음 기간으로 이동
+    SELECT ... FROM temp_subscription_periods t
+    INNER JOIN period_chain pc ON t.period_start = pc.period_end
+)
+SELECT ... FROM enriched_periods;
+COMMIT;
+```
+
+### 3. 커스텀 Sensor (VPN/네트워크 체크)
+
+Airflow worker에서 Redshift로의 네트워크 접근이 VPN에 의존하는 환경에서,
+파이프라인 시작 전에 연결 가능 여부를 확인합니다.
+
 ```python
-# 단일 책임 원칙을 따른 컴포넌트 분리
-components = {
-    'db_manager': DatabaseManager(),
-    'sheets_manager': GoogleSheetsManager(),
-    'redash_manager': RedashManager(),
-    'contract_analyzer': DocumentTemplateContractAnalyzer(),
-    'form_analyzer': DocumentTemplateFormAnalyzer()
-}
+class RedshiftConnectionSensor(BaseSensorOperator):
+    """VPN/네트워크 상태를 확인하고, 연결 가능할 때까지 대기"""
+
+    def poke(self, context: Context) -> bool:
+        try:
+            db = get_db_manager()
+            db.execute_query("SELECT 1")
+            return True
+        except Exception:
+            return False  # 다음 poke까지 대기
 ```
 
-- **기능별 분리**: 업무에서 이미 활용하고 있는 모듈화 방법 적용
-- **코드 재사용**: 업무에서 이미 활용하고 있는 재사용 구조 적용
-- **유지보수 고려**: 업무에서 이미 활용하고 있는 코드 품질 관리 방법 적용
+이 Sensor를 DAG 최상단에 배치하면, VPN이 끊어진 상태에서
+즉시 실패하는 대신 연결이 복구될 때까지 자동으로 재시도합니다.
 
-## 🛠️ 사용한 기술 스택 및 학습 내용
+### 4. DataValidator (데이터 품질 검증)
 
-### **Core Technologies**
-- **Apache Airflow 2.9.3**: 워크플로우 오케스트레이션 및 스케줄링
-- **Python 3.11+**: 백엔드 로직 및 데이터 처리
-- **Docker & Docker Compose**: 컨테이너 기반 개발 환경
-- **PostgreSQL**: 로컬 개발용 데이터베이스
+Silver/Gold 레이어 적재 후 데이터 품질을 검증합니다.
 
-### **Data Processing & APIs**
-- **Google Sheets API (gspread)**: 기존에 학습한 데이터 소스 연동 및 자동화 기술 활용
-- **Redash API (redash-toolbelt)**: 기존에 학습한 데이터 쿼리 실행 및 결과 관리 기술 활용
-- **KoNLPy (Komoran)**: 기존에 학습한 한국어 자연어 처리 및 형태소 분석 기술 활용
-- **Pandas 2.0.0**: 기존에 학습한 데이터 조작 및 분석 기술 활용
-- **Redshift Connector**: 기존에 학습한 AWS Redshift 데이터베이스 연동 기술 활용
+```python
+@task
+def validate_subscription_periods() -> None:
+    """Silver 적재 후 데이터 정합성 검증"""
+    checks = [
+        ("NULL 체크", "SELECT COUNT(*) FROM analytics.subscription_periods WHERE user_id IS NULL"),
+        ("기간 정합성", "SELECT COUNT(*) FROM analytics.subscription_periods WHERE period_start > period_end"),
+        ("중복 체크", "SELECT user_id, period_seq, COUNT(*) FROM ... GROUP BY 1,2 HAVING COUNT(*) > 1"),
+    ]
+    for name, query in checks:
+        result = db.execute_query(query)
+        if result[0][0] > 0:
+            raise ValueError(f"데이터 품질 검증 실패: {name}")
+```
 
-### **Infrastructure & DevOps**
-- **환경 변수 관리**: 민감 정보 보안 및 환경별 설정 분리
-- **로깅 시스템**: 체계적인 로그 관리 및 디버깅
-- **에러 처리**: 예외 상황에 대한 견고한 에러 핸들링
-- **모니터링**: Slack 웹훅을 통한 실시간 알림
-- **컨테이너 최적화**: Java 17, GCC 컴파일러 등 개발 도구 포함
+### 5. 텍스트 마이닝 (형태소 분석 + 카테고리 분류)
 
-## 📦 설치 및 실행 가이드
+한국어 텍스트를 형태소 분석하여 카테고리를 자동 분류합니다.
+kiwipiepy를 활용한 경량 형태소 분석기로, JVM 의존성 없이 동작합니다.
 
-### **1. 환경 설정**
+```python
+from kiwipiepy import Kiwi
+
+kiwi = Kiwi()
+
+def classify_text(title: str) -> str:
+    """텍스트에서 형태소를 추출하고 사전 기반으로 카테고리 분류"""
+    tokens = kiwi.tokenize(title)
+    nouns = [t.form for t in tokens if t.tag.startswith("NN")]
+    # 카테고리 사전과 매칭하여 분류
+    return match_category(nouns)
+```
+
+### 6. 메모리 관리 (Batch Processing, gc, malloc_trim)
+
+제한된 컨테이너 메모리(scheduler 5GB, 나머지 2GB)에서
+대량 데이터를 안정적으로 처리하기 위한 패턴입니다.
+
+```python
+import ctypes
+import gc
+
+def process_in_batches(query: str, batch_size: int = 5000):
+    """배치 단위로 데이터를 처리하여 메모리 피크 억제"""
+    offset = 0
+    while True:
+        batch = db.execute_query(f"{query} LIMIT {batch_size} OFFSET {offset}")
+        if not batch:
+            break
+        process(batch)
+        del batch
+        gc.collect()
+        offset += batch_size
+
+    # glibc에 해제된 메모리를 OS에 반환 요청
+    try:
+        ctypes.CDLL("libc.so.6").malloc_trim(0)
+    except OSError:
+        pass
+```
+
+**docker-compose.yaml에서의 메모리 설정:**
+```yaml
+environment:
+  MALLOC_ARENA_MAX: "2"          # glibc arena 수 제한 -> RSS 절감
+deploy:
+  resources:
+    limits:
+      memory: 5G                 # scheduler OOM 방지
+    reservations:
+      memory: 3G
+```
+
+### 7. Slack 알림 (성공/실패 콜백)
+
+DAG 레벨 콜백으로 파이프라인 상태를 Slack에 실시간 알림합니다.
+Sensor timeout은 네트워크 장애로 인한 예상 가능한 실패이므로
+경고(warning) 수준으로 분류합니다.
+
+```python
+def on_failure_callback(context):
+    task_id = context["task_instance"].task_id
+    is_sensor = task_id.startswith("check_") or "sensor" in task_id.lower()
+    emoji = ":warning:" if is_sensor else ":x:"
+    send_slack({"text": f"{emoji} Task *{task_id}* failed ..."})
+
+with DAG(
+    on_success_callback=on_success_callback,
+    on_failure_callback=on_failure_callback,
+    ...
+):
+```
+
+---
+
+## 기술 스택
+
+| 영역 | 기술 | 버전/비고 |
+|------|------|----------|
+| Orchestration | Apache Airflow | 2.10.5 (Task SDK, Asset, DAG Processor) |
+| Language | Python | 3.11 |
+| Database | Amazon Redshift | Redshift-specific SQL (DISTKEY, SORTKEY, CTAS) |
+| Metadata DB | PostgreSQL | 15 (Airflow metadata store) |
+| Container | Docker Compose | Multi-service (scheduler, api-server, dag-processor) |
+| Data Processing | pandas, numpy | 1.5.3 / 1.26.4 |
+| NLP | kiwipiepy | 0.18.0 (한국어 형태소 분석) |
+| Google API | gspread, google-auth | Google Sheets 연동 |
+| AWS | boto3, redshift-connector | Redshift 직접 연결 |
+| Notification | Slack Webhook | 성공/실패 콜백 |
+| Testing | pytest, ruff | 단위 테스트 + linting |
+
+---
+
+## 로컬 실행
+
+### 사전 요구사항
+
+- Docker Desktop (Docker Compose v2)
+- 4GB 이상 여유 메모리
+
+### 설정 및 실행
+
 ```bash
-# 프로젝트 클론
-git clone <repository-url>
-cd airflow_project_home
+# 1. 저장소 클론
+git clone https://github.com/<your-username>/airflow-project-home.git
+cd airflow-project-home
 
-# 환경 변수 파일 생성 (데모용)
+# 2. 환경 변수 설정
 cp .env.example .env
-# .env 파일에 데모 환경 변수 설정
+# .env 파일을 열어 실제 값으로 채우기
+
+# 3. Airflow 서비스 시작
+docker compose up -d
+
+# 4. 초기화 완료 확인
+docker compose logs airflow-init
+
+# 5. 서비스 상태 확인
+docker compose ps
 ```
 
-### **2. Docker 환경 실행**
+### 접속 정보
+
+| 서비스 | URL | 기본 계정 |
+|--------|-----|----------|
+| Airflow UI | http://localhost:8080 | admin / admin |
+
+### 주요 명령어
+
 ```bash
-# Airflow 서비스 시작
-docker-compose up -d
-
-# 서비스 상태 확인
-docker-compose ps
-
 # 로그 모니터링
-docker-compose logs -f airflow-scheduler
+docker compose logs -f airflow-scheduler
+
+# DAG 목록 확인
+docker compose exec airflow-scheduler airflow dags list
+
+# 서비스 중지
+docker compose down
+
+# 볼륨 포함 완전 삭제
+docker compose down -v
 ```
-
-### **3. Airflow 접속 및 확인**
-- **Web UI**: http://localhost:8080
-- **기본 계정**: `airflow` / `airflow`
-- **DAG 활성화**: `daily_table_update` DAG 활성화 후 실행
-
-**참고**: Docker를 처음 실행하는 경우, admin 계정을 추가해야 할 수 있습니다:
-```bash
-# admin 계정 추가
-docker-compose exec airflow-webserver airflow users create \
-    --username admin \
-    --firstname Admin \
-    --lastname User \
-    --role Admin \
-    --email admin@example.com \
-    --password admin123
-```
-
-### **4. Dockerfile 상세 정보**
-```dockerfile
-FROM apache/airflow:2.9.3
-# Java 17, GCC 컴파일러, Python 개발 도구 포함
-# KoNLPy 및 기타 한국어 처리 라이브러리 지원
-```
-
-## 🔧 환경 변수 설정 (운영 환경 준비)
-
-### **필수 파일 및 디렉토리**
-- **`.env`**: 환경 변수 설정 파일 (`.env example` 참고)
-- **`google-credentials.json`**: Google Sheets API 인증 파일 (프로젝트 루트에 위치)
-
-### **환경 변수 설정**
-`.env` 파일에 다음 환경 변수들을 설정합니다:
-
-```bash
-# Airflow 기본 설정
-AIRFLOW_UID=50000
-AIRFLOW_GID=0
-TZ=Asia/Seoul
-AIRFLOW__CORE__LOAD_EXAMPLES=False
-AIRFLOW__WEBSERVER__EXPOSE_CONFIG=True
-
-# 데이터베이스 연결 (운영 환경에 맞게 설정)
-DB_ID=your_db_user
-DB_PW=your_db_password
-DB_HOST=your_db_host
-DB_PORT=5432
-DB_NAME=your_database_name
-
-# Redash 설정 (운영 환경)
-REDASH_API_KEY=your_redash_api_key
-REDASH_URL=https://your-redash-instance.com
-
-# Slack 설정 (운영 환경)
-SLACK_WEBHOOK_URL=your_slack_webhook_url
-SLACK_TEAM_ID=your_team_id
-
-# Google Sheets API (운영 환경)
-GOOGLE_CREDENTIALS_FILE=path/to/your/google-credentials.json
-```
-
-**참고**: `.env example` 파일을 참고하여 필요한 환경 변수를 설정하세요.
-
-## 📊 DAG 구조 및 실행 흐름
-
-### **daily_table_update DAG 구조**
-```
-start → sheets_update_task → [21개 독립적 Redash 쿼리] → [2개 의존적 Redash 쿼리] → text_mining_task → end
-```
-
-### **Task별 상세 기능**
-
-#### **1. sheets_update_task**
-- Google Sheets에서 카테고리 데이터 추출
-- Redshift 데이터베이스에 데이터 적재
-- 데이터 동기화 상태 모니터링
-
-#### **2. redash_queries_task**
-- **21개 독립적 쿼리**: 완전 직렬 실행으로 Redash 워커 부하 최소화
-- **2개 의존적 쿼리**: 선행 조건 만족 후 실행
-- **쿼리 세분화**: 각 쿼리를 개별 Task로 분리하여 정밀한 실행 제어 및 재시작 가능
-- 쿼리 실행 시간 및 결과 모니터링
-
-#### **3. text_mining_task**
-- 문서 제목 텍스트 마이닝 분석
-- 템플릿 제목 카테고리 분류
-- 자연어 처리 결과 데이터베이스 저장
-
-## 🔍 모니터링 및 디버깅
-
-### **로그 시스템**
-- **DAG 레벨 로그**: 전체 워크플로우 실행 흐름 추적
-- **Task 레벨 로그**: 개별 태스크 실행 상태 및 결과 확인
-- **에러 로그**: 실패 원인 분석 및 문제 해결 가이드
-
-### **Slack 알림 시스템**
-- 🚀 **워크플로우 시작**: DAG 실행 시작 알림
-- ✅ **워크플로우 완료**: 성공적인 실행 완료 알림
-- ❌ **워크플로우 실패**: 에러 상세 정보와 함께 실패 알림
-
-## 🎯 이 프로젝트를 통해 학습한 내용
-
-### **Apache Airflow 기초 학습**
-- **DAG 이해**: 기본적인 워크플로우 설계 방법 학습
-- **Task 의존성**: 태스크 간 실행 순서 관리 방법 익히기
-- **스케줄링**: 정기적인 작업 실행 설정 방법 연습
-- **모니터링**: 작업 상태를 확인하고 알림 받는 방법 학습
-- **환경 설정**: Docker를 활용한 개발 환경 구축 경험
-
-### **데이터 처리 기초 학습**
-- **데이터 파이프라인**: 기본적인 ETL 프로세스 이해 및 구현 연습
-- **API 연동**: 업무에서 이미 활용하고 있는 외부 서비스 연동 기술 적용
-- **데이터 처리**: 업무에서 이미 활용하고 있는 데이터 변환 및 저장 기술 적용
-- **텍스트 마이닝**: 업무에서 이미 활용하고 있는 한국어 자연어 처리 기술 적용
-- **데이터 품질**: 업무에서 이미 활용하고 있는 데이터 검증 방법 적용
-
-### **DevOps 기초 경험**
-- **컨테이너 활용**: Docker를 사용한 개발 환경 구축 연습
-- **환경 변수 관리**: 설정 정보를 분리하여 관리하는 방법 학습
-- **로그 확인**: 기본적인 로그 관리 및 디버깅 방법 익히기
-- **에러 처리**: 예외 상황에 대한 기본적인 처리 방법 학습
-- **확장 고려**: 향후 기능 추가를 고려한 기본적인 구조 설계
-
-## 🔄 확장 및 커스터마이징
-
-### **새로운 DAG 추가**
-1. `tasks/` 폴더에 `{dag_name}_tasks.py` 파일 생성
-2. `dags/` 폴더에 `{dag_name}_dag.py` 파일 생성
-3. 단일 책임 원칙을 따라 기능별로 분리
-
-### **새로운 기능 추가**
-1. `libs/` 폴더에 새로운 유틸리티 모듈 생성
-2. 재사용 가능한 컴포넌트로 설계
-3. 기존 코드와의 호환성 유지
-
-## 📚 학습 자료 및 참고 문서
-
-### **공식 문서**
-- [Apache Airflow 공식 문서](https://airflow.apache.org/docs/)
-- [Docker Compose 공식 문서](https://docs.docker.com/compose/)
-- [KoNLPy 한국어 자연어 처리](https://konlpy.org/)
-
-
-
-## 🤝 피드백 및 개선점
-
-이 프로젝트는 학습 목적으로 제작된 포트폴리오입니다. 개선점이나 더 나은 구현 방법에 대한 피드백을 환영합니다. 
-
-### **기여 방법**
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
-
-
-
-## 📄 라이선스
-
-이 프로젝트는 **MIT 라이선스** 하에 배포됩니다.
 
 ---
 
-## 🎉 **프로젝트 완성도**
+## 테스트
 
-### **✅ 이 프로젝트를 통해 새로 학습한 기능**
-- [x] Apache Airflow 2.9.3 기본 DAG 작성 및 실행
-- [x] Airflow DAG에서 Task 간 의존성 관리 방법 학습
-- [x] Airflow 환경에서의 에러 처리 및 모니터링 방법 학습
-- [x] Airflow와 Docker 환경 연동 방법 학습
-- [x] 환경 변수 기반 설정 관리
+```bash
+# 의존성 설치
+pip install -r requirements-dev.txt
 
-### **✅ 이미 학습 완료된 기능 (이 프로젝트에서 활용)**
-- [x] Google Sheets & Redash API 연동
-- [x] 한국어 텍스트 마이닝 (KoNLPy)
-- [x] Slack 알림 시스템 구현
-- [x] 데이터베이스 연동 및 데이터 처리
-- [x] 코드 모듈화 및 구조화
+# 전체 테스트 실행
+pytest tests/ -v
 
-### **🚀 앞으로 학습하고 싶은 방향**
-- [ ] 실시간 데이터 스트리밍 파이프라인 구축 방법 학습
-- [ ] 머신러닝 모델을 파이프라인에 통합하는 방법 익히기
-- [ ] 클라우드 환경에서의 데이터 파이프라인 구축 경험
-- [ ] 성능 모니터링 및 최적화 기법 학습
-- [ ] CI/CD 파이프라인 구축 방법 익히기
-- [ ] 쿠버네티스 기반 오케스트레이션 학습
-- [ ] 데이터 품질 모니터링 시스템 구축 방법 학습
-- [ ] 대규모 시스템 아키텍처 설계 방법 익히기
+# 커버리지 포함
+pytest tests/ --cov=airflow/dags --cov-report=term-missing
+
+# Lint
+ruff check airflow/
+```
 
 ---
 
-**마지막 업데이트**: 2025년 1월  
-**버전**: 1.0.0  
-**프로젝트 유형**: 학습 목적의 포트폴리오  
-**기술 스택**: Apache Airflow 2.9.3, Python 3.11+, Docker, PostgreSQL, KoNLPy, Redshift
+## 라이선스
+
+MIT License

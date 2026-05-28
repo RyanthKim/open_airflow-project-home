@@ -1,84 +1,156 @@
+# ---------------------------------------------------------------------------
+#  Airflow ETL Pipeline — Docker Compose (LocalExecutor)
+# ---------------------------------------------------------------------------
+#  Services: postgres (metadata DB), api-server, scheduler, dag-processor, init
+#  Base image: apache/airflow:2.10.5
+#  Usage:
+#    cp .env.example .env   # fill in real values
+#    docker compose up -d
+# ---------------------------------------------------------------------------
+
+x-airflow-common: &airflow-common
+  image: apache/airflow:2.10.5
+  user: "${AIRFLOW_UID:-50000}:0"
+  env_file: .env
+  environment: &airflow-common-env
+    # --- Airflow core ---
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "True"
+    AIRFLOW__CORE__DEFAULT_TIMEZONE: Asia/Seoul
+    AIRFLOW__CORE__PARALLELISM: 8
+    AIRFLOW__CORE__MAX_ACTIVE_TASKS_PER_DAG: 4
+    AIRFLOW__CORE__MAX_ACTIVE_RUNS_PER_DAG: 1
+
+    # --- Database (Airflow metadata) ---
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+
+    # --- Webserver / API ---
+    AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "False"
+    AIRFLOW__WEBSERVER__DEFAULT_UI_TIMEZONE: Asia/Seoul
+
+    # --- Scheduler ---
+    AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL: 30
+    AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL: 30
+
+    # --- Logging ---
+    AIRFLOW__LOGGING__BASE_LOG_FOLDER: /opt/airflow/logs
+    AIRFLOW__LOGGING__DAG_PROCESSOR_MANAGER_LOG_LOCATION: /opt/airflow/logs/dag_processor_manager/dag_processor_manager.log
+
+    # --- External connections (placeholders — override in .env) ---
+    DB_HOST: ${DB_HOST:-your-redshift-cluster.region.redshift.amazonaws.com}
+    DB_PORT: ${DB_PORT:-5439}
+    DB_NAME: ${DB_NAME:-your_database}
+    DB_ID: ${DB_ID:-your_username}
+    DB_PW: ${DB_PW:-your_password}
+    SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL:-}
+    GOOGLE_CREDENTIALS_PATH: /opt/airflow/google-credentials.json
+
+    # --- Memory optimisation (glibc arena fragmentation) ---
+    MALLOC_ARENA_MAX: "2"
+
+    # --- Python path ---
+    PYTHONPATH: /opt/airflow/dags:/opt/airflow/plugins
+
+  volumes:
+    - ./airflow/dags:/opt/airflow/dags
+    - ./airflow/logs:/opt/airflow/logs
+    - ./airflow/config:/opt/airflow/config
+    - ./airflow/plugins:/opt/airflow/plugins
+
+  depends_on:
+    postgres:
+      condition: service_healthy
+
+# ---------------------------------------------------------------------------
 services:
+  # --- Metadata DB ---
   postgres:
     image: postgres:15
     environment:
       POSTGRES_USER: airflow
       POSTGRES_PASSWORD: airflow
       POSTGRES_DB: airflow
-      TZ: ${TZ}
+      TZ: Asia/Seoul
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U airflow -d airflow"]
       interval: 5s
       retries: 10
+    restart: unless-stopped
 
+  # --- One-shot: migrate metadata DB ---
   airflow-init:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    env_file: .env
-    environment:
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    <<: *airflow-common
     entrypoint: ["/bin/bash", "-c"]
     command:
       - |
-        airflow db init
+        airflow db migrate &&
+        airflow users create \
+          --username admin \
+          --firstname Admin \
+          --lastname User \
+          --role Admin \
+          --email admin@example.com \
+          --password admin \
+        || true
+    restart: "no"
+
+  # --- API Server (replaces legacy webserver in 2.10+) ---
+  airflow-api-server:
+    <<: *airflow-common
+    command: api-server
+    ports:
+      - "8080:8080"
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/api/v1/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
     depends_on:
       postgres:
         condition: service_healthy
-    volumes:
-      - ./airflow_project/dags:/opt/airflow/dags
-      - ./airflow_project/tasks:/opt/airflow/tasks
-      - ./airflow_project/logs:/opt/airflow/logs
-      - ./airflow_project/libs:/opt/airflow/libs
-      - ./requirements.txt:/requirements.txt
-      - ./google-credentials.json:/opt/airflow/google-credentials.json
+      airflow-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
 
-  airflow-webserver:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    env_file: .env
-    environment:
-      AIRFLOW__CORE__EXECUTOR: LocalExecutor
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
-      PYTHONPATH: /opt/airflow:/opt/airflow/tasks:/opt/airflow/libs
-    command: webserver
-    ports: ["8080:8080"]
-    depends_on:
-      postgres:
-        condition: service_healthy
-    volumes:
-      - ./airflow_project/dags:/opt/airflow/dags
-      - ./airflow_project/tasks:/opt/airflow/tasks
-      - ./airflow_project/logs:/opt/airflow/logs
-      - ./airflow_project/libs:/opt/airflow/libs
-      - ./requirements.txt:/requirements.txt
-      - ./google-credentials.json:/opt/airflow/google-credentials.json
-
+  # --- Scheduler ---
   airflow-scheduler:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    env_file: .env
-    environment:
-      AIRFLOW__CORE__EXECUTOR: LocalExecutor
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
-      PYTHONPATH: /opt/airflow:/opt/airflow/tasks:/opt/airflow/libs
+    <<: *airflow-common
     command: scheduler
+    deploy:
+      resources:
+        limits:
+          memory: 5G
+        reservations:
+          memory: 3G
     depends_on:
       postgres:
         condition: service_healthy
-      airflow-webserver:
-        condition: service_started
-    volumes:
-      - ./airflow_project/dags:/opt/airflow/dags
-      - ./airflow_project/tasks:/opt/airflow/tasks
-      - ./airflow_project/logs:/opt/airflow/logs
-      - ./airflow_project/libs:/opt/airflow/libs
-      - ./requirements.txt:/requirements.txt
-      - ./google-credentials.json:/opt/airflow/google-credentials.json
+      airflow-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  # --- DAG Processor (standalone since Airflow 2.10) ---
+  airflow-dag-processor:
+    <<: *airflow-common
+    command: dag-processor
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+    depends_on:
+      postgres:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
 
 volumes:
   pgdata:
